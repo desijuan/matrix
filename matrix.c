@@ -3,73 +3,80 @@
 #include <stdlib.h>
 
 typedef struct {
-  size_t nrows;
-  size_t ncols;
+  unsigned int nrows;
+  unsigned int ncols;
   double *entries;
 } matrix;
 
-matrix *m_create(size_t nrows, size_t ncols) {
+matrix *m_create(unsigned int nrows, unsigned int ncols) {
   matrix *m = (matrix *)malloc(sizeof(matrix));
   if (m == NULL) {
-    perror("m_create");
+    perror(__FUNCTION__);
+    exit(1);
+  }
+  m->entries = (double *)calloc(nrows * ncols, sizeof(double));
+  if (m->entries == NULL) {
+    perror(__FUNCTION__);
     exit(1);
   }
   m->nrows = nrows;
   m->ncols = ncols;
-  m->entries = (double *)calloc(nrows * ncols, sizeof(double));
-  if (m->entries == NULL) {
-    perror("m_create");
-    exit(1);
-  }
   return m;
 }
 
-void m_clean(matrix *m) {
+void m_destroy(matrix *m) {
   free(m->entries);
   free(m);
 }
 
 void m_init(matrix *m) {
-  for (int i = 0; i < m->nrows * m->ncols; i++)
+  unsigned int max = m->nrows * m->ncols;
+  for (unsigned int i = 0; i < max; i++)
     m->entries[i] = (double)i + 1;
 }
 
-void print(matrix *m) {
-  for (int i = 0; i < m->nrows * m->ncols; i++) {
+void m_print(matrix *m) {
+  unsigned int nrows = m->nrows;
+  unsigned int ncols = m->ncols;
+  for (unsigned int i = 0; i < nrows * ncols; i++) {
     printf("%7.2f", m->entries[i]);
-    if (i % m->ncols == m->ncols - 1)
+    if (i % ncols == ncols - 1)
       putchar('\n');
   }
 }
 
 void diag(matrix *t, matrix *s) {
   if ((t->nrows != s->nrows) || (t->ncols != s->ncols)) {
-    fprintf(stderr, "diag: Matrices of different sizes\n");
+    fprintf(stderr, "%s: Matrices of different sizes\n", __FUNCTION__);
     exit(1);
   }
-  int j;
-  for (int i = 0; i < s->nrows; i++) {
-    for (j = 0; j < s->ncols; j++) {
+  unsigned int nrows = s->nrows;
+  unsigned int ncols = s->ncols;
+  unsigned int j;
+  for (unsigned int i = 0; i < nrows; i++) {
+    for (j = 0; j < ncols; j++) {
       if (i == j)
-        (t->entries)[i * s->ncols + j] = (s->entries)[i * s->ncols + j];
+        (t->entries)[i * ncols + j] = (s->entries)[i * ncols + j];
       else
-        (t->entries)[i * s->ncols + j] = 0;
+        (t->entries)[i * ncols + j] = 0;
     }
   }
 }
 
 void ldiag(matrix *t, matrix *s) {
   if ((t->nrows != s->nrows) || (t->ncols != s->ncols)) {
-    fprintf(stderr, "ldiag: Matrices of different sizes\n");
+    fprintf(stderr, "%s: Matrices of different sizes\n", __FUNCTION__);
     exit(1);
   }
-  int j;
-  for (int i = 0; i < s->nrows; i++) {
-    for (j = 0; j < s->ncols; j++) {
+  unsigned int ncols = s->ncols;
+  unsigned int nrows = s->nrows;
+  unsigned int j;
+  for (unsigned int i = 0; i < nrows; i++) {
+    for (j = 0; j < ncols; j++) {
       if (i > j)
-        (t->entries)[i * s->ncols + j] = (s->entries)[i * s->ncols + j];
+        (t->entries)[i * ncols + j] = (s->entries)[i * ncols + j];
       else
-        (t->entries)[i * s->ncols + j] = 0;
+        (t->entries)[i * ncols + j] = 0;
     }
   }
 }
@@ -81,8 +88,8 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  int nrows = atoi(argv[1]);
-  int ncols = atoi(argv[2]);
+  unsigned int nrows = atoi(argv[1]);
+  unsigned int ncols = atoi(argv[2]);
 
   matrix *m = m_create(nrows, ncols);
   m_init(m);
@@ -94,16 +101,16 @@ int main(int argc, char *argv[]) {
   ldiag(mld, m);
 
   printf("\nm:\n");
-  print(m);
+  m_print(m);
   printf("\ndiag(m):\n");
-  print(md);
+  m_print(md);
   printf("\nldiag(m):\n");
-  print(mld);
+  m_print(mld);
   printf("\n");
 
-  m_clean(m);
-  m_clean(md);
-  m_clean(mld);
+  m_destroy(m);
+  m_destroy(md);
+  m_destroy(mld);
   m = md = mld = NULL;
 
   return 0;
