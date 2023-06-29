@@ -8,6 +8,48 @@ typedef struct {
   double *entries;
 } matrix;
 
+matrix *m_create(unsigned int nrows, unsigned int ncols);
+void m_destroy(matrix *m);
+void m_init(matrix *m);
+void m_print(matrix *m);
+void diag(matrix *t, matrix *s);
+void ldiag(matrix *t, matrix *s);
+
+int main(int argc, char *argv[]) {
+
+  if (argc != 3) {
+    printf("Usage: %s <nrows> <ncols>\n", argv[0]);
+    return 1;
+  }
+
+  unsigned int nrows = atoi(argv[1]);
+  unsigned int ncols = atoi(argv[2]);
+
+  matrix *m = m_create(nrows, ncols);
+  m_init(m);
+
+  matrix *md = m_create(nrows, ncols);
+  diag(md, m);
+
+  matrix *mld = m_create(nrows, ncols);
+  ldiag(mld, m);
+
+  printf("\nm:\n");
+  m_print(m);
+  printf("\ndiag(m):\n");
+  m_print(md);
+  printf("\nldiag(m):\n");
+  m_print(mld);
+  printf("\n");
+
+  m_destroy(m);
+  m_destroy(md);
+  m_destroy(mld);
+  m = md = mld = NULL;
+
+  return 0;
+}
+
 matrix *m_create(unsigned int nrows, unsigned int ncols) {
   matrix *m = (matrix *)malloc(sizeof(matrix));
   if (m == NULL) {
@@ -56,9 +98,9 @@ void diag(matrix *t, matrix *s) {
   for (unsigned int i = 0; i < nrows; i++) {
     for (j = 0; j < ncols; j++) {
       if (i == j)
-        (t->entries)[i * ncols + j] = (s->entries)[i * ncols + j];
+	(t->entries)[i * ncols + j] = (s->entries)[i * ncols + j];
       else
-        (t->entries)[i * ncols + j] = 0;
+	(t->entries)[i * ncols + j] = 0;
     }
   }
 }
@@ -74,44 +116,9 @@ void ldiag(matrix *t, matrix *s) {
   for (unsigned int i = 0; i < nrows; i++) {
     for (j = 0; j < ncols; j++) {
       if (i > j)
-        (t->entries)[i * ncols + j] = (s->entries)[i * ncols + j];
+	(t->entries)[i * ncols + j] = (s->entries)[i * ncols + j];
       else
-        (t->entries)[i * ncols + j] = 0;
+	(t->entries)[i * ncols + j] = 0;
     }
   }
-}
-
-int main(int argc, char *argv[]) {
-
-  if (argc != 3) {
-    printf("Usage: %s <nrows> <ncols>\n", argv[0]);
-    return 1;
-  }
-
-  unsigned int nrows = atoi(argv[1]);
-  unsigned int ncols = atoi(argv[2]);
-
-  matrix *m = m_create(nrows, ncols);
-  m_init(m);
-
-  matrix *md = m_create(nrows, ncols);
-  diag(md, m);
-
-  matrix *mld = m_create(nrows, ncols);
-  ldiag(mld, m);
-
-  printf("\nm:\n");
-  m_print(m);
-  printf("\ndiag(m):\n");
-  m_print(md);
-  printf("\nldiag(m):\n");
-  m_print(mld);
-  printf("\n");
-
-  m_destroy(m);
-  m_destroy(md);
-  m_destroy(mld);
-  m = md = mld = NULL;
-
-  return 0;
 }
